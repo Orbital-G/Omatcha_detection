@@ -1,2 +1,0 @@
-
--DCATKIN_DEVEL_PREFIX=/home/jojo/Team_Daisangen/devel -DCMAKE_INSTALL_PREFIX=/home/jojo/Team_Daisangen/install -G Unix Makefiles
