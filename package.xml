@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>Team_Daisangen_1</name>
+  <name>Omatcha_detection</name>
   <version>0.0.0</version>
-  <description>The daisangen1 package</description>
+  <description>Team daisangen package</description>
 
   <maintainer email="s22c1033@s.chibakoudai.jp">Kadono Kodai</maintainer>
   <author email="s22c1033@s.chibakoudai.jp">Kadono Kodai</author>
