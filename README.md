@@ -6,3 +6,28 @@
 
 - このパッケージはCRANE-X7を使ってお抹茶を点てるためのパッケージです。本アプリケーションはこのOmatcha_detectionと[Omatcha_actions](https://github.com/Orbital-G/Omatcha_actions)の二つのパッケージをセットで使用する必要があります。合わせてのインストールをお願いします。
 CRANE-X7、お抹茶の粉が入った容器、茶筅、お湯と茶碗を用意して配置し、パッケージ内のスクリプトを実行することで、お抹茶を点てることができます。
+
+#環境構築
+
+##本パッケージ及びCRANE-X7のROSパッケージのインストール
+'''
+$ cd ~/catkin_ws/src/ 
+$ git clone https://github.com/rt-net/crane_x7_ros.git
+$ git clone https://github.com/Orbital-G/Omatcha_detection.git
+$ cd Omatcha_detection/scripts
+$ pip install -r requirement.txt
+$ (cd ~/catkin_ws && catkin_make)
+'''
+
+##実行手順
+###CRANE_X7をセットアップ
+
+###IntelRealSenseを取りつける
+
+'''
+$ cd src
+$ sudo chmod 666 /dev/ttyUSB*
+$ roslaunch crane_x7_bringup demo.launch fake_execution:=false
+$ rosrun Omatcha_detection detect_pub.py
+'''
+
