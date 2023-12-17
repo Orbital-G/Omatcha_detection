@@ -1,4 +1,33 @@
 #!/usr/bin/env python3
+# YOLOv5 🚀 by Ultralytics, AGPL-3.0 license
+"""
+Run YOLOv5 detection inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
+
+Usage - sources:
+    $ python detect.py --weights yolov5s.pt --source 0                               # webcam
+                                                     img.jpg                         # image
+                                                     vid.mp4                         # video
+                                                     screen                          # screenshot
+                                                     path/                           # directory
+                                                     list.txt                        # list of images
+                                                     list.streams                    # list of streams
+                                                     'path/*.jpg'                    # glob
+                                                     'https://youtu.be/LNwODJXcvt4'  # YouTube
+                                                     'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
+
+Usage - formats:
+    $ python detect.py --weights yolov5s.pt                 # PyTorch
+                                 yolov5s.torchscript        # TorchScript
+                                 yolov5s.onnx               # ONNX Runtime or OpenCV DNN with --dnn
+                                 yolov5s_openvino_model     # OpenVINO
+                                 yolov5s.engine             # TensorRT
+                                 yolov5s.mlmodel            # CoreML (macOS-only)
+                                 yolov5s_saved_model        # TensorFlow SavedModel
+                                 yolov5s.pb                 # TensorFlow GraphDef
+                                 yolov5s.tflite             # TensorFlow Lite
+                                 yolov5s_edgetpu.tflite     # TensorFlow Edge TPU
+                                 yolov5s_paddle_model       # PaddlePaddle
+"""
 
 import argparse
 import csv
@@ -6,19 +35,8 @@ import os
 import platform
 import sys
 from pathlib import Path
-import threading
-import torch
-import pyrealsense2 as rs
-import numpy as np
-import re
 import rospy
-import actionlib
-import math
-import sys
-from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
-from control_msgs.msg import GripperCommandAction, GripperCommandGoal
-from trajectory_msgs.msg import JointTrajectoryPoint
-from std_msgs.msg import Int16
+import torch
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -28,32 +46,24 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 from ultralytics.utils.plotting import Annotator, colors, save_one_box
 
+from std_msgs.msg import Int16
+from Omatcha_detection.msg import val
+
 from models.common import DetectMultiBackend
 from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages, LoadScreenshots, LoadStreams
 from utils.general import (LOGGER, Profile, check_file, check_img_size, check_imshow, check_requirements, colorstr, cv2,
                            increment_path, non_max_suppression, print_args, scale_boxes, strip_optimizer, xyxy2xywh)
 from utils.torch_utils import select_device, smart_inference_mode
 
-config=rs.config()
-config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-#config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
-#config.enable_stream(rs.stream.infrared, 2, 640, 480, rs.format.y8, 30)
-pipeline = rs.pipeline()
-pipeline.start(config)
-align_to = rs.stream.color
-align    = rs.align(align_to)
 
 @smart_inference_mode()
 def run(
-        weights=ROOT / 'yolov5s.pt',  # model path or triton URL
-        #source=ROOT / 'data/images',  # file/dir/URL/glob/screen/0(webcam)
-        source=8,
-        #data=ROOT / 'data/coco128.yaml',  # dataset.yaml path
-        data=ROOT / 'data/data.yaml',
+        weights=ROOT / 'bst.pt',  # model path or triton URL
+        source=ROOT / 'data/images',  # file/dir/URL/glob/screen/0(webcam)
+        data=ROOT / 'data/coco128.yaml',  # dataset.yaml path
         imgsz=(640, 640),  # inference size (height, width)
         conf_thres=0.25,  # confidence threshold
-        iou_thres=0.45,  # NMS IOU thresholdpython3 detect.py --source 8 --weights yolov5s.pt
-
+        iou_thres=0.45,  # NMS IOU threshold
         max_det=1000,  # maximum detections per image
         device='',  # cuda device, i.e. 0 or 0,1,2,3 or cpu
         view_img=False,  # show results
@@ -78,10 +88,11 @@ def run(
         vid_stride=1,  # video frame-rate stride
 ):
     source = str(source)
-    rospy.init_node('time_pub')
-    pub= rospy.Publisher('Area', Int16, queue_size=1)
-    rate=rospy.Rate(10)
-    py=0
+    V=val()
+    V.area=0
+    V.cx=0
+    V.cy=0
+    V.count=0
     save_img = not nosave and not source.endswith('.txt')  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
     is_url = source.lower().startswith(('rtsp://', 'rtmp://', 'http://', 'https://'))
@@ -115,7 +126,6 @@ def run(
     # Run inference
     model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
-    
     for path, im, im0s, vid_cap, s in dataset:
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
@@ -149,21 +159,8 @@ def run(
                 writer.writerow(data)
 
         # Process predictions
-	
         for i, det in enumerate(pred):  # per image
             seen += 1
-            
-            
-            frames = pipeline.wait_for_frames()
-            aligned_frames=align.process(frames)
-            depth_frame = aligned_frames.get_depth_frame()
-            #color_frame = aligned_frames.get_color_frame()
-            if not depth_frame :    
-                continue
-            #color_image = np.asanyarray(color_frame.get_data())
-            depth_image = np.asanyarray(depth_frame.get_data())
-            depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
-            
             if webcam:  # batch_size >= 1
                 p, im0, frame = path[i], im0s[i].copy(), dataset.count
                 s += f'{i}: '
@@ -192,7 +189,6 @@ def run(
                     label = names[c] if hide_conf else f'{names[c]}'
                     confidence = float(conf)
                     confidence_str = f'{confidence:.2f}'
-                    #print(xyxy)
 
                     if save_csv:
                         write_to_csv(p.name, label, confidence_str)
@@ -218,8 +214,6 @@ def run(
                     cv2.namedWindow(str(p), cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
                     cv2.resizeWindow(str(p), im0.shape[1], im0.shape[0])
                 cv2.imshow(str(p), im0)
-                
-                #cv2.imshow('depth',depth_colormap)
                 cv2.waitKey(1)  # 1 millisecond
 
             # Save results (image with detections)
@@ -242,43 +236,14 @@ def run(
                     vid_writer[i].write(im0)
 
         # Print time (inference-only)
-        #LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
-        o=re.sub(r"[^a-zA-Z]","", s)
-        l=o.replace('x','')
-        #if l=='tyasen' :
-        #	print('same')
-       
-
+        LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
         if len(det)==1:
-        	global area
-        	global dis
-        	global cx
-        	global cy
-        	#print("0:"+str(xyxy[0]))
-        	#print(xyxy[2])
-        	
-        	if py==0:
-        		dis=0
-        		py=1
-        	elif py==1:
-        		dis=dis+1
-        		
-        	dis=dis+1
-        	area=(xyxy[2]-xyxy[0])*(xyxy[3]-xyxy[1])
-        	pub.publish(area)
-        	rate.sleep()
-        	cx=(xyxy[2]+xyxy[0])/2
-        	cy=((xyxy[3]+xyxy[1])/2)+100
-        	
-        	
-        elif len(det)==0:
-        	cx=0
-        	cy=0
-        	area=0
-        	if py==0:
-        		dis=0
+        	V.area=(xyxy[2]-xyxy[0])*(xyxy[3]-xyxy[1])
+        	V.cx=(xyxy[2]+xyxy[0])/2
+        	V.cy=((xyxy[3]+xyxy[1])/2)+100
+        pub.publish(V)
+        #rate.sleep()
 	
-
     # Print results
     t = tuple(x.t / seen * 1E3 for x in dt)  # speeds per image
     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
@@ -287,18 +252,15 @@ def run(
         LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")
     if update:
         strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
-    if cv2.waitKey(0) & 0xFF ==ord('q'):
-            	cv2.destroyAllWindows
-            	
+
 
 def parse_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'yolov5s.pt', help='model path or triton URL')
-    #parser.add_argument('--source', type=str, default=ROOT / 'data/images', help='file/dir/URL/glob/screen/0(webcam)')
-    parser.add_argument('--source', type=int, default=0,)
+    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'cyasen.pt', help='model path or triton URL')
+    parser.add_argument('--source', type=int, default=8, help='file/dir/URL/glob/screen/0(webcam)')
     parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='(optional) dataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='inference size h,w')
-    parser.add_argument('--conf-thres', type=float, default=0.8, help='confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.25, help='confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold')
     parser.add_argument('--max-det', type=int, default=1000, help='maximum detections per image')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
@@ -328,8 +290,14 @@ def parse_opt():
     return opt
 
 
-
-def serch(opt):
+def main(opt):
     check_requirements(ROOT / 'requirements.txt', exclude=('tensorboard', 'thop'))
     run(**vars(opt))
 
+
+if __name__ == '__main__':
+    rospy.init_node('var_number_pub')
+    pub = rospy.Publisher('num', val, queue_size=1)
+    rate = rospy.Rate(10)
+    opt = parse_opt()
+    main(opt)
