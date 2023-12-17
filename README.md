@@ -29,17 +29,25 @@ cd ~/catkin_ws/src
 git clone https://github.com/rt-net/crane_x7_ros.git  
 ```
 
-2. 次にcatkin_ws/src内に本パッケージをインストールしてビルドしてください。
+2. catkin_ws/src内に二つのパッケージOmatcha_detectionとOmatcha_actionsをインストールしてビルドしてください。
 ```sh
 cd ~/catkin_ws/src
 git clone https://github.com/Orbital-G/Omatcha_detection.git
+git clone https://github.com/Orbital-G/Omatcha_actions.git
 cd ~/catkin_ws  
 catkin_make  
 ```
 
 ## 実行方法
+roscoreコマンドとオリジナルのパッケージ内のlaunchファイルを使用してROSノードが通信できるようにします。  
+その後、Omatcha_detection内のプログラムを実行してください。
 ```sh
 roscore &
 roslaunch crane_x7_bringup demo.launch
 Omatcha_detect
+```
+
+次にターミナルのタブを新たに開いてセットのパッケージOmatcha_actions内のプログラムを実行してください。
+```
+
 ```
