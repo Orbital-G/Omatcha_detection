@@ -1,33 +1,5 @@
 #!/usr/bin/env python3
 # YOLOv5 🚀 by Ultralytics, AGPL-3.0 license
-"""
-Run YOLOv5 detection inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
-
-Usage - sources:
-    $ python detect.py --weights yolov5s.pt --source 0                               # webcam
-                                                     img.jpg                         # image
-                                                     vid.mp4                         # video
-                                                     screen                          # screenshot
-                                                     path/                           # directory
-                                                     list.txt                        # list of images
-                                                     list.streams                    # list of streams
-                                                     'path/*.jpg'                    # glob
-                                                     'https://youtu.be/LNwODJXcvt4'  # YouTube
-                                                     'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
-
-Usage - formats:
-    $ python detect.py --weights yolov5s.pt                 # PyTorch
-                                 yolov5s.torchscript        # TorchScript
-                                 yolov5s.onnx               # ONNX Runtime or OpenCV DNN with --dnn
-                                 yolov5s_openvino_model     # OpenVINO
-                                 yolov5s.engine             # TensorRT
-                                 yolov5s.mlmodel            # CoreML (macOS-only)
-                                 yolov5s_saved_model        # TensorFlow SavedModel
-                                 yolov5s.pb                 # TensorFlow GraphDef
-                                 yolov5s.tflite             # TensorFlow Lite
-                                 yolov5s_edgetpu.tflite     # TensorFlow Edge TPU
-                                 yolov5s_paddle_model       # PaddlePaddle
-"""
 
 import argparse
 import csv
@@ -37,7 +9,8 @@ import sys
 from pathlib import Path
 import rospy
 import torch
-
+import pyrealsense2 as rs
+import numpy as np
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
 if str(ROOT) not in sys.path:
@@ -45,16 +18,18 @@ if str(ROOT) not in sys.path:
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 from ultralytics.utils.plotting import Annotator, colors, save_one_box
-
 from std_msgs.msg import Int16
-
+from Omatcha_detection.msg import val2
 from models.common import DetectMultiBackend
 from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages, LoadScreenshots, LoadStreams
 from utils.general import (LOGGER, Profile, check_file, check_img_size, check_imshow, check_requirements, colorstr, cv2,
                            increment_path, non_max_suppression, print_args, scale_boxes, strip_optimizer, xyxy2xywh)
 from utils.torch_utils import select_device, smart_inference_mode
 
-
+config = rs.config()
+config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+pipeline = rs.pipeline()
+pipeline.start(config)
 @smart_inference_mode()
 def run(
         weights=ROOT / 'bst.pt',  # model path or triton URL
@@ -87,7 +62,10 @@ def run(
         vid_stride=1,  # video frame-rate stride
 ):
     source = str(source)
-    th=0
+    V2=val2()
+    V2.cx2=0
+    V2.count2=0
+    V2.depth = 0
     save_img = not nosave and not source.endswith('.txt')  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
     is_url = source.lower().startswith(('rtsp://', 'rtmp://', 'http://', 'https://'))
@@ -121,6 +99,7 @@ def run(
     # Run inference
     model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
+
     for path, im, im0s, vid_cap, s in dataset:
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
@@ -156,6 +135,8 @@ def run(
         # Process predictions
         for i, det in enumerate(pred):  # per image
             seen += 1
+            frames = pipeline.wait_for_frames()
+            depth_frame = frames.get_depth_frame()
             if webcam:  # batch_size >= 1
                 p, im0, frame = path[i], im0s[i].copy(), dataset.count
                 s += f'{i}: '
@@ -231,11 +212,17 @@ def run(
                     vid_writer[i].write(im0)
 
         # Print time (inference-only)
+        x=320
+        y=240
         LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
-        th=th+1
-        pub.publish(th)
-        rate.sleep()
-	
+        if len(det)==1:
+        	V2.cx2 = (xyxy[2]+xyxy[0])/2
+        	V2.count2 += 1
+        	V2.depth = depth_frame.get_distance(x,y)
+        pub.publish(V2)
+        print(V2.depth)
+        #rate.sleep()
+
     # Print results
     t = tuple(x.t / seen * 1E3 for x in dt)  # speeds per image
     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
@@ -245,14 +232,13 @@ def run(
     if update:
         strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
 
-
 def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'cyasen.pt', help='model path or triton URL')
     parser.add_argument('--source', type=int, default=8, help='file/dir/URL/glob/screen/0(webcam)')
     parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='(optional) dataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='inference size h,w')
-    parser.add_argument('--conf-thres', type=float, default=0.25, help='confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.8, help='confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold')
     parser.add_argument('--max-det', type=int, default=1000, help='maximum detections per image')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
@@ -281,7 +267,6 @@ def parse_opt():
     print_args(vars(opt))
     return opt
 
-
 def main(opt):
     check_requirements(ROOT / 'requirements.txt', exclude=('tensorboard', 'thop'))
     run(**vars(opt))
@@ -289,7 +274,7 @@ def main(opt):
 
 if __name__ == '__main__':
     rospy.init_node('var_number_pub')
-    pub = rospy.Publisher('num', Int16, queue_size=1)
+    pub = rospy.Publisher('num2', val2, queue_size=10)
     rate = rospy.Rate(10)
     opt = parse_opt()
     main(opt)
