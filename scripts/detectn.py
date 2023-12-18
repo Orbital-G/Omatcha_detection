@@ -1,33 +1,5 @@
 #!/usr/bin/env python3
 # YOLOv5 🚀 by Ultralytics, AGPL-3.0 license
-"""
-Run YOLOv5 detection inference on images, videos, directories, globs, YouTube, webcam, streams, etc.
-
-Usage - sources:
-    $ python detect.py --weights yolov5s.pt --source 0                               # webcam
-                                                     img.jpg                         # image
-                                                     vid.mp4                         # video
-                                                     screen                          # screenshot
-                                                     path/                           # directory
-                                                     list.txt                        # list of images
-                                                     list.streams                    # list of streams
-                                                     'path/*.jpg'                    # glob
-                                                     'https://youtu.be/LNwODJXcvt4'  # YouTube
-                                                     'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
-
-Usage - formats:
-    $ python detect.py --weights yolov5s.pt                 # PyTorch
-                                 yolov5s.torchscript        # TorchScript
-                                 yolov5s.onnx               # ONNX Runtime or OpenCV DNN with --dnn
-                                 yolov5s_openvino_model     # OpenVINO
-                                 yolov5s.engine             # TensorRT
-                                 yolov5s.mlmodel            # CoreML (macOS-only)
-                                 yolov5s_saved_model        # TensorFlow SavedModel
-                                 yolov5s.pb                 # TensorFlow GraphDef
-                                 yolov5s.tflite             # TensorFlow Lite
-                                 yolov5s_edgetpu.tflite     # TensorFlow Edge TPU
-                                 yolov5s_paddle_model       # PaddlePaddle
-"""
 
 import argparse
 import csv
@@ -241,7 +213,8 @@ def run(
         if len(det)==1:
         	V.area=(xyxy[2]-xyxy[0])*(xyxy[3]-xyxy[1])
         	V.cx=(xyxy[2]+xyxy[0])/2
-        	V.cy=((xyxy[3]+xyxy[1])/2)+100
+        	V.cy=((xyxy[3]+xyxy[1])/2)+80
+        	V.count+=1
         pub.publish(V)
         #rate.sleep()
 
@@ -257,10 +230,10 @@ def run(
 def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'cyasen.pt', help='model path or triton URL')
-    parser.add_argument('--source', type=int, default=8, help='file/dir/URL/glob/screen/0(webcam)')
+    parser.add_argument('--source', type=int, default=1, help='file/dir/URL/glob/screen/0(webcam)')
     parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='(optional) dataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='inference size h,w')
-    parser.add_argument('--conf-thres', type=float, default=0.25, help='confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.8, help='confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold')
     parser.add_argument('--max-det', type=int, default=1000, help='maximum detections per image')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
@@ -296,7 +269,7 @@ def main(opt):
 
 if __name__ == '__main__':
     rospy.init_node('var_number_pub')
-    pub = rospy.Publisher('num', val, queue_size=1)
+    pub = rospy.Publisher('num', val, queue_size=10)
     rate = rospy.Rate(10)
     opt = parse_opt()
     main(opt)
