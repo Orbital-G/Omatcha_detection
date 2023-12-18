@@ -9,7 +9,8 @@ import sys
 from pathlib import Path
 import rospy
 import torch
-
+import pyrealsense2 as rs
+import numpy as np
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
 if str(ROOT) not in sys.path:
@@ -18,13 +19,17 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 from ultralytics.utils.plotting import Annotator, colors, save_one_box
 from std_msgs.msg import Int16
-from Omatcha_detection.msg import val
+from Omatcha_detection.msg import val2
 from models.common import DetectMultiBackend
 from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages, LoadScreenshots, LoadStreams
 from utils.general import (LOGGER, Profile, check_file, check_img_size, check_imshow, check_requirements, colorstr, cv2,
                            increment_path, non_max_suppression, print_args, scale_boxes, strip_optimizer, xyxy2xywh)
 from utils.torch_utils import select_device, smart_inference_mode
 
+config = rs.config()
+config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+pipeline = rs.pipeline()
+pipeline.start(config)
 @smart_inference_mode()
 def run(
         weights=ROOT / 'bst.pt',  # model path or triton URL
@@ -57,12 +62,10 @@ def run(
         vid_stride=1,  # video frame-rate stride
 ):
     source = str(source)
-    V=val()
-    V.area=0
-    V.cx=0
-    V.cy=0
-    V.count=0
-
+    V2=val2()
+    V2.cx2=0
+    V2.count2=0
+    V2.depth = 0
     save_img = not nosave and not source.endswith('.txt')  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
     is_url = source.lower().startswith(('rtsp://', 'rtmp://', 'http://', 'https://'))
@@ -132,7 +135,8 @@ def run(
         # Process predictions
         for i, det in enumerate(pred):  # per image
             seen += 1
-
+            frames = pipeline.wait_for_frames()
+            depth_frame = frames.get_depth_frame()
             if webcam:  # batch_size >= 1
                 p, im0, frame = path[i], im0s[i].copy(), dataset.count
                 s += f'{i}: '
@@ -186,7 +190,6 @@ def run(
                     cv2.namedWindow(str(p), cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
                     cv2.resizeWindow(str(p), im0.shape[1], im0.shape[0])
                 cv2.imshow(str(p), im0)
-  
                 cv2.waitKey(1)  # 1 millisecond
 
             # Save results (image with detections)
@@ -209,13 +212,15 @@ def run(
                     vid_writer[i].write(im0)
 
         # Print time (inference-only)
+        x=320
+        y=240
         LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
         if len(det)==1:
-        	V.area=(xyxy[2]-xyxy[0])*(xyxy[3]-xyxy[1])
-        	V.cx=(xyxy[2]+xyxy[0])/2
-        	V.cy=((xyxy[3]+xyxy[1])/2)+100
-        	V.count+=1
-        pub.publish(V)
+        	V2.cx2 = (xyxy[2]+xyxy[0])/2
+        	V2.count2 += 1
+        	V2.depth = depth_frame.get_distance(x,y)
+        pub.publish(V2)
+        print(V2.depth)
         #rate.sleep()
 
     # Print results
@@ -230,7 +235,7 @@ def run(
 def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'cyasen.pt', help='model path or triton URL')
-    parser.add_argument('--source', type=int, default=1, help='file/dir/URL/glob/screen/0(webcam)')
+    parser.add_argument('--source', type=int, default=8, help='file/dir/URL/glob/screen/0(webcam)')
     parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='(optional) dataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='inference size h,w')
     parser.add_argument('--conf-thres', type=float, default=0.8, help='confidence threshold')
@@ -269,7 +274,7 @@ def main(opt):
 
 if __name__ == '__main__':
     rospy.init_node('var_number_pub')
-    pub = rospy.Publisher('num', val, queue_size=10)
+    pub = rospy.Publisher('num2', val2, queue_size=10)
     rate = rospy.Rate(10)
     opt = parse_opt()
     main(opt)
