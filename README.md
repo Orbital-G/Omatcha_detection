@@ -38,6 +38,8 @@ cd ~/catkin_ws
 catkin_make  
 ```
 
+3. RealSenseのインストール
+
 ## 実行方法
 roscoreコマンドとオリジナルのパッケージ内のlaunchファイルを使用してROSノードが通信できるようにします。  
 その後、Omatcha_detection内のプログラムを実行してください。
