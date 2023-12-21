@@ -41,7 +41,7 @@ catkin_make
 ```
 
 3. RealSenseのインストール
-RealSenseを使用するためにワークスペース内にソースコードをダウンロードしてパッケージをビルドしてください
+RealSenseを使用するためにワークスペース内にソースコードをダウンロードしてパッケージをビルドしてください。
 ```sh
 cd ~/catkin_ws/src/
 git clone https://github.com/IntelRealSense/realsense-ros.git
@@ -52,22 +52,25 @@ catkin_make
 ```
 
 ## 実行方法
-CRANE-X7をPCに接続し、以下のコマンドでデバイスドライバに実行権限を与えCRANE-X7とPCが通信できる状態にします。  
-そしてオリジナルのパッケージ内のlaunchファイルを使用してROSノードが通信できるようにします。
+1. CRANE-X7をPCに接続し、以下のコマンドでデバイスドライバに実行権限を与えCRANE-X7とPCが通信できる状態にします。
 ```sh
 sudo chmod 666 /dev/ttyUSB0
-roslaunch crane_x7_bringup demo.launch
+
 ```
 
-合わせて以下のコマンドでRealSenseを使用できる状態にしておきます。
+2. オリジナルのパッケージ内のlaunchファイルを使用してROSノードが通信できるようにします。
+```sh
+roslaunch crane_x7_bringup demo.launch
+```
+3. 新規タブを開き以下のコマンドでRealSenseを使用できる状態にしておきます。
 ```sh
 roslaunch realsense2_camera rs_camera.launch  
 ```
 
-CRANE-X7の正面に茶碗を、周囲の離れたところに抹茶の入った容器、茶筅を配置してください。  
-なお、このアプリケーションは液体を扱います。機器の浸水等に注意してください。 
+4. CRANE-X7の正面に茶碗を、周囲の離れたところに抹茶の入った容器、茶筅を配置してください。
+   なお、このアプリケーションは液体を扱います。機器の浸水等に注意してください。 
 
-* タブを新たに開いてOmatcha_detection内のスクリプトを実行してください。  
+5. 新規タブを開いてOmatcha_detection内のスクリプトを実行してください。  
 detect_matcha.py:抹茶の容器を探すスクリプト  
 detect_chasen.py:茶筅を探すスクリプト
 ```sh
@@ -75,14 +78,14 @@ rosrun Omatcha_detection detect_matcha.py
 rosrun Omatcha_detection detect_chasen.py
 ```
 
-* タブを新たに開いてセットのパッケージOmatcha_actions内のスクリプトを実行してください。
+6. 新規タブを開いてセットのパッケージOmatcha_actions内のスクリプトを実行してください。
 act_matcha.py:抹茶の容器を掴むスクリプト  
 act_chasen.py:茶筅を掴むスクリプト
 ```sh
 rosrun Omatcha_actions act_matcha.py
 rosrun Omatcha_actions act_chasen.py
 ```
-
+CRANE-X7が物体を探し、検出すると物体を掴んだのち茶碗の上で所定のアクションを行います。  
 実際に本アプリケーションを実行した際の動画です。
 
 
