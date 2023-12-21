@@ -213,7 +213,7 @@ def run(
         if len(det)==1:
         	V.area=(xyxy[2]-xyxy[0])*(xyxy[3]-xyxy[1])
         	V.cx=(xyxy[2]+xyxy[0])/2
-        	V.cy=((xyxy[3]+xyxy[1])/2)+100
+        	V.cy=((xyxy[3]+xyxy[1])/2)+80
         	V.count+=1
         pub.publish(V)
         #rate.sleep()

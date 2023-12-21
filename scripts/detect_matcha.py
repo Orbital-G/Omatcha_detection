@@ -215,12 +215,13 @@ def run(
         x=320
         y=240
         LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
+        V2.depth = depth_frame.get_distance(x,y)
         if len(det)==1:
         	V2.cx2 = (xyxy[2]+xyxy[0])/2
         	V2.count2 += 1
-        	V2.depth = depth_frame.get_distance(x,y)
+        	#V2.depth = depth_frame.get_distance(x,y)
         pub.publish(V2)
-        print(V2.depth)
+        #print(V2.depth)
         #rate.sleep()
 
     # Print results
@@ -234,11 +235,11 @@ def run(
 
 def parse_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'cyasen.pt', help='model path or triton URL')
+    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'matcha.pt', help='model path or triton URL')
     parser.add_argument('--source', type=int, default=8, help='file/dir/URL/glob/screen/0(webcam)')
     parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='(optional) dataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='inference size h,w')
-    parser.add_argument('--conf-thres', type=float, default=0.8, help='confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.5, help='confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold')
     parser.add_argument('--max-det', type=int, default=1000, help='maximum detections per image')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
