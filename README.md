@@ -69,7 +69,7 @@ CRANE-X7の正面に茶碗を、周囲の離れたところに抹茶の入った
 以下のコマンドを実行すると物体を探し、検出できると物体を掴みに行きます。
 
 タブを新たに開いてOmatcha_detection内の行いたいコマンドを実行してください。  
-detect_matcha:抹茶の容器を探すコマンド
+detect_matcha:抹茶の容器を探すコマンド  
 detect_chasen:茶筅を探すコマンド
 ```sh
 ./detect_matcha
@@ -77,12 +77,16 @@ detect_chasen:茶筅を探すコマンド
 ```
 
 次にタブを新たに開いてセットのパッケージOmatcha_actions内のコマンドを実行してください。
-action_matcha:抹茶の容器を掴むコマンド
+action_matcha:抹茶の容器を掴むコマンド  
 action_chasen:茶筅を掴むコマンド
 ```sh
 ./action_matcha
 ./action_chasen
 ```
+
+実際に本アプリケーションを実行した際の動画です。
+
+https://github.com/Orbital-G/Omatcha_detection/assets/147364200/777f8baf-732d-44eb-b7f8-3b55b3b7b351
 
 ## ライセンス
 このパッケージOmatcha_detectionではYOLOv5を使用しています。
