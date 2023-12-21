@@ -67,8 +67,8 @@ roslaunch crane_x7_bringup demo.launch
 roslaunch realsense2_camera rs_camera.launch  
 ```
 
-4. CRANE-X7の正面に茶碗を、周囲の離れたところに抹茶の入った容器、茶筅を配置しください。お湯を入れる動作には対応しておりません。お湯は茶碗にあらかじめ入れてください。
-  なお、このアプリケーションは液体を扱います。機器の浸水等に注意してください。 
+4. CRANE-X7の正面に茶碗を、周囲の離れたところに抹茶の入った容器、茶筅を配置しください。お湯を入れる動作には対応しておりません。お湯は茶碗にあらかじめ入れてください。  
+なお、このアプリケーションは液体を扱います。機器の浸水等に注意してください。 
 
 5. 新規タブを開いてOmatcha_detection内のスクリプトを実行してください。  
 detect_matcha.py:抹茶の容器を探すスクリプト  
@@ -78,7 +78,7 @@ rosrun Omatcha_detection detect_matcha.py
 rosrun Omatcha_detection detect_chasen.py
 ```
 
-6. 新規タブを開いてセットのパッケージOmatcha_actions内のスクリプトを実行してください。
+6. 新規タブを開いてセットのパッケージOmatcha_actions内のスクリプトを実行してください。  
 act_matcha.py:抹茶の容器を掴むスクリプト  
 act_chasen.py:茶筅を掴むスクリプト
 ```sh
