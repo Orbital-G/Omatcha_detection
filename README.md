@@ -86,7 +86,7 @@ action_chasen:茶筅を掴むコマンド
 
 実際に本アプリケーションを実行した際の動画です。
 
-https://github.com/Orbital-G/Omatcha_detection/assets/147364200/777f8baf-732d-44eb-b7f8-3b55b3b7b351
+https://github.com/Orbital-G/Omatcha_detection/assets/147364200/17e6c89e-84b5-47d0-828d-5f6ebd7feed1
 
 ## ライセンス
 このパッケージOmatcha_detectionではYOLOv5を使用しています。
