@@ -68,20 +68,20 @@ CRANE-X7の正面に茶碗を、周囲の離れたところに抹茶の入った
 なお、このアプリケーションは液体を扱います。機器の浸水等に注意してください。  
 以下のコマンドを実行すると物体を探し、検出できると物体を掴みに行きます。
 
-タブを新たに開いてOmatcha_detection内の行いたいコマンドを実行してください。  
-detect_matcha:抹茶の容器を探すコマンド
-detect_chasen:茶筅を探すコマンド
+タブを新たに開いてOmatcha_detection内の行いたいスクリプトを実行してください。  
+detect_matcha.py:抹茶の容器を探すスクリプト  
+detect_chasen.py:茶筅を探すスクリプト
 ```sh
-./detect_matcha
-./detect_chasen
+rosrun Omatcha_detection detect_matcha.py
+rosrun Omatcha_detection detect_chasen.py
 ```
 
-次にタブを新たに開いてセットのパッケージOmatcha_actions内のコマンドを実行してください。
-action_matcha:抹茶の容器を掴むコマンド
-action_chasen:茶筅を掴むコマンド
+次にタブを新たに開いてセットのパッケージOmatcha_actions内のスクリプトを実行してください。
+act_matcha.py:抹茶の容器を掴むスクリプト  
+act_chasen.py:茶筅を掴むスクリプト
 ```sh
-./action_matcha
-./action_chasen
+rosrun Omatcha_actions act_matcha.py
+rosrun Omatcha_actions act_chasen.py
 ```
 
 ## ライセンス

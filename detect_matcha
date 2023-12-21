@@ -1,3 +1,0 @@
-#!/usr/bin/bash
-
-rosrun Omatcha_detection detect2.py
