@@ -39,17 +39,44 @@ catkin_make
 ```
 
 3. RealSenseのインストール
+RealSenseを使用するためにワークスペース内にソースコードをダウンロードしてパッケージをビルドしてください
+```sh
+cd ~/catkin_ws/src/
+git clone https://github.com/IntelRealSense/realsense-ros.git
+cd realsense-ros/
+git checkout `git tag | sort -V | grep -P "^2.\d+\.\d+" | tail -1`
+cd ~/catkin_ws/
+catkin_make
+```
 
 ## 実行方法
 roscoreコマンドとオリジナルのパッケージ内のlaunchファイルを使用してROSノードが通信できるようにします。  
-その後、Omatcha_detection内のプログラムを実行してください。
 ```sh
 roscore &
+```
+
+次にCRANE-X7をPCに接続し、以下のコマンドを実行してデバイスドライバに実行権限を与え起動します。
+```sh
+sudo chmod 666 /dev/ttyUSB0
 roslaunch crane_x7_bringup demo.launch
-Omatcha_detect
 ```
 
-次にターミナルのタブを新たに開いてセットのパッケージOmatcha_actions内のプログラムを実行してください。
+その後、タブを新たに開いてOmatcha_detection内の行いたいスクリプトを実行してください。  
+detect_matcha:抹茶の容器を探すスクリプト
+detect_chasen:茶筅を探すスクリプト
+```sh
+./detect_matcha
+./detect_chasen
 ```
 
+タブを新たに開いてセットのパッケージOmatcha_actions内のプログラムを実行してください。
+action_matcha:抹茶の容器を掴むスクリプト
+action_chasen:茶筅を掴むスクリプト
+```sh
+./action_matcha
+./action_chasen
 ```
+
+## ライセンス
+このパッケージOmatcha_detectionではYOLOv5を使用しています。
+本リポジトリの内容はGPLv3に準拠し、公開しています。
