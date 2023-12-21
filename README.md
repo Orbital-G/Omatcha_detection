@@ -8,7 +8,7 @@
 CRANE-X7、Intel RealSense、お抹茶の粉が入った容器、茶筅、お湯と茶碗を用意して配置し、パッケージ内のスクリプトを実行することで、お抹茶を点てることができます。  
 このOmatcha_detectionと[Omatcha_actions](https://github.com/Orbital-G/Omatcha_actions)の二つのパッケージをセットで使用する必要があります。合わせてのインストールをお願いします。  
 
-- このパッケージはアプリケーションのうち、物体検出の機能を担うパッケージです。Omatcha_actionsでアームの動作の制御を行います。
+- このパッケージはアプリケーションのうち、物体検出の機能を担うパッケージです。[Omatcha_actions](https://github.com/Orbital-G/Omatcha_actions)でアームの動作の制御を行います。
 
 ## 動作環境
 * OS: Ubuntu20.04  
@@ -67,7 +67,7 @@ roslaunch realsense2_camera rs_camera.launch
 CRANE-X7の正面に茶碗を、周囲の離れたところに抹茶の入った容器、茶筅を配置してください。  
 なお、このアプリケーションは液体を扱います。機器の浸水等に注意してください。 
 
-タブを新たに開いてOmatcha_detection内の行いたいスクリプトを実行してください。  
+* タブを新たに開いてOmatcha_detection内の行いたいスクリプトを実行してください。  
 detect_matcha.py:抹茶の容器を探すスクリプト  
 detect_chasen.py:茶筅を探すスクリプト
 ```sh
