@@ -52,7 +52,7 @@ catkin_make
 ```
 
 ## 実行方法
-次にCRANE-X7をPCに接続し、以下のコマンドでデバイスドライバに実行権限を与えCRANE-X7とPCが通信できる状態にします。  
+CRANE-X7をPCに接続し、以下のコマンドでデバイスドライバに実行権限を与えCRANE-X7とPCが通信できる状態にします。  
 そしてオリジナルのパッケージ内のlaunchファイルを使用してROSノードが通信できるようにします。
 ```sh
 sudo chmod 666 /dev/ttyUSB0
@@ -65,8 +65,7 @@ roslaunch realsense2_camera rs_camera.launch
 ```
 
 CRANE-X7の正面に茶碗を、周囲の離れたところに抹茶の入った容器、茶筅を配置してください。  
-なお、このアプリケーションは液体を扱います。機器の浸水等に注意してください。  
-以下のコマンドを実行すると物体を探し、検出できると物体を掴みに行きます。
+なお、このアプリケーションは液体を扱います。機器の浸水等に注意してください。 
 
 タブを新たに開いてOmatcha_detection内の行いたいスクリプトを実行してください。  
 detect_matcha.py:抹茶の容器を探すスクリプト  
@@ -83,6 +82,12 @@ act_chasen.py:茶筅を掴むスクリプト
 rosrun Omatcha_actions act_matcha.py
 rosrun Omatcha_actions act_chasen.py
 ```
+
+実際に本アプリケーションを実行した際の動画です。
+
+
+https://github.com/Orbital-G/Omatcha_detection/assets/147364200/397026eb-578c-4178-97c3-8467ff378d24
+
 
 ## ライセンス
 このパッケージOmatcha_detectionではYOLOv5を使用しています。
