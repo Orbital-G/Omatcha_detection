@@ -94,4 +94,8 @@ https://github.com/Orbital-G/Omatcha_detection/assets/147364200/397026eb-578c-41
 
 ## ライセンス
 このパッケージOmatcha_detectionではYOLOv5を使用しています。
-本リポジトリの内容はGPLv3に準拠し、公開しています。
+本リポジトリの内容はGPLv3に準拠し、公開しています。　　
+
+©︎ Kadono Kodai　　
+©︎ Nishi Touki　　
+©︎ Hachiya Etsushi
